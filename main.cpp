@@ -1,66 +1,82 @@
+//main.cpp
+
+#include "PersonProfile.h"
+#include "AttributeTranslator.h"
+#include "MemberDatabase.h"
+#include "MatchMaker.h"
+#include "provided.h"
 #include <iostream>
 #include <string>
-#include <cassert>
-#include "RadixTree.h"
-#include "AttributeTranslator.h"
-using namespace std;
+#include <vector>
 
-void listCompatiblePairs(const AttributeTranslator& translator) {
-    AttValPair att("favorite_food", "del taco");
-    std::vector<AttValPair> result = translator.FindCompatibleAttValPairs(att);
-    if (!result.empty()) {
-        std::cout << "Compatible attributes and values:" << std::endl;
-        for (const auto& p: result)
-            std::cout << p.attribute << " -> " << p.value << std::endl;
-    }
-}
+const std::string MEMBERS_FILE    = "/Users/allenwang/Desktop/project4/project4/members.txt";
+const std::string TRANSLATOR_FILE = "/Users/allenwang/Desktop/project4/project4/translator.txt";
 
-void testTranslator() {
-    AttributeTranslator at;
-    at.Load("/Users/allenwang/Desktop/project4/translator.txt");
-    listCompatiblePairs(at);
-}
-
-void testRadixTree() {
-    RadixTree<int> t;
-    t.insert("alpha", 2);
-    t.insert("chisun", 4);
-    t.insert("chi", 3);
-    t.insert("allen", 1);
-    t.insert("rubens", 9);
-    t.insert("romane", 6);
-    t.insert("romanus", 7);
-    t.insert("romulus", 8);
-    t.insert("romanb", 5);
-    t.insert("ruber", 10);
-    t.insert("rubicon", 11);
-    t.insert("rubicundus", 12);
-    t.insert("xxxx",99);
-    t.insert("xxxxy",99);
-    t.insert("alpha", 22);
-    t.insert("apple",100);
-    t.insert("applewatch",100);
-    t.insert("app",100);
-    t.insert("ap",100);
-    t.insert("and",100);
-
-    assert(*(t.search("allen"))==1);
-    assert(*(t.search("chi"))==3);
-    assert(*(t.search("rubicundus"))==12);
-    assert(*(t.search("romanus"))==7);
-    assert(*(t.search("ruber"))==10);
-    assert(t.search("big")==nullptr);
-    
-
-    t.dump(t.m_root, 0);
-    assert(!t.m_root->m_end);
-
-
-    cout<<"passed RadixTree test"<<endl;
-}
+bool findMatches(const MemberDatabase& mdb, const AttributeTranslator& at);
 
 int main() {
-    //testRadixTree();
-    testTranslator();
+    MemberDatabase mdb;
+    if (!mdb.LoadDatabase(MEMBERS_FILE))
+    {
+        std::cout << "Error loading " << MEMBERS_FILE << std::endl;
+        return 1;
+    }
+    AttributeTranslator at;
+    if (!at.Load(TRANSLATOR_FILE))
+    {
+        std::cout << "Error loading " << TRANSLATOR_FILE << std::endl;
+        return 1;
+    }
+
+    while (findMatches(mdb, at))
+        ;
+
+    std::cout << "Happy dating!" << std::endl;
 }
 
+bool findMatches(const MemberDatabase& mdb, const AttributeTranslator& at)
+{
+      // Prompt for email
+    std::string email;
+    const PersonProfile* pp;
+    for (;;) {
+        std::cout << "Enter the member's email for whom you want to find matches: ";
+        std::getline(std::cin, email);
+        if (email.empty())
+            return false;
+        pp = mdb.GetMemberByEmail(email);
+        if (pp != nullptr)
+            break;
+        std::cout << "That email is not in the member database." << std::endl;
+    }
+
+      // Show member's attribute-value pairs
+    std::cout << "The member has the following attributes:" << std::endl;
+    for (int k = 0; k != pp->GetNumAttValPairs(); k++) {
+        AttValPair av;
+        pp->GetAttVal(k, av);
+        std::cout << av.attribute << " --> " << av.value << std::endl;
+    }
+
+      // Prompt user for threshold
+    int threshold;
+    std::cout << "How many shared attributes must matches have? ";
+    std::cin >> threshold;
+    std::cin.ignore(10000, '\n');
+
+      // Print matches and the number of matching translated attributes
+    MatchMaker mm(mdb, at);
+    std::vector<EmailCount> emails = mm.IdentifyRankedMatches(email, threshold);
+    if (emails.empty())
+        std::cout << "No member was a good enough match." << std::endl;
+    else {
+        std::cout << "The following members were good matches:" << std::endl;;
+        for (const auto& emailCount : emails) {
+            const PersonProfile* pp = mdb.GetMemberByEmail(emailCount.email);
+            std::cout << pp->GetName() << " at " << emailCount.email << " with "
+                      << emailCount.count << " matches!" << std::endl;
+        }
+    }
+    std::cout << std::endl;
+    return true;
+}

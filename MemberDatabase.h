@@ -4,10 +4,8 @@
 #include <string>
 #include <vector>
 #include "RadixTree.h"
-
-class AttValPair;
-
-class PersonProfile;
+#include "PersonProfile.h"
+#include "provided.h"
 
 class MemberDatabase {
     public:
@@ -17,7 +15,10 @@ class MemberDatabase {
         std::vector<std::string> FindMatchingMembers(const AttValPair& input) const;
         const PersonProfile* GetMemberByEmail(std::string email) const;
     private:
-        
+        RadixTree<PersonProfile*> m_treeByEmail; // email -----> PersonProfile
+        std::vector<PersonProfile*> m_personPtr; // stores pointers of dynamically allocated memory
+        RadixTree<std::vector<std::string>> m_treeByPair; // attribute ------> email
+        AttValPair parser(std::string line);
 };
 
 #endif

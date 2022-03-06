@@ -19,12 +19,13 @@ class PersonProfile {
         std::string m_name;
         std::string m_email;
         int m_num;
-        struct Data {
+        struct Counter {
+            Counter(std::string attr) :m_attr(attr), m_number (0){}
             std::string m_attr;
-            int m_size;
-            RadixTree<std::vector<AttValPair>> m_pair;
+            int m_number;
         };
-        std::vector<Data> m_data;
+        std::vector<Counter> m_cntVec;
+        RadixTree<std::vector<AttValPair>> m_pair;
 };
 
 #endif

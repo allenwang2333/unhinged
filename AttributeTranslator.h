@@ -13,9 +13,9 @@ class AttributeTranslator {
         bool Load(std::string filename);
         std::vector<AttValPair> FindCompatibleAttValPairs(const AttValPair& source) const;
     private:
-        RadixTree<std::vector<AttValPair>> m_pair;
-        std::vector<AttValPair> parser(std::string line);
-        std::string findSourceTrait(std::string line);
+        RadixTree<std::vector<std::string>> m_pair;
+        std::string findCompatible(std::string line);
+        std::string findSource(std::string line);
 };
 
 #endif
