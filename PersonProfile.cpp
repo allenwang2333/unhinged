@@ -21,6 +21,7 @@ string PersonProfile::GetEmail() const {
 }
 
 void PersonProfile::AddAttValPair(const AttValPair& attval) {
+    // TODO: need optimization
     m_num++;
     vector<AttValPair> v;
     bool flag = false;
@@ -44,6 +45,13 @@ void PersonProfile::AddAttValPair(const AttValPair& attval) {
             m_pair.insert(attval.attribute, v);
         }
         else {
+            int size = m_pair.search(attval.attribute)->size();
+            for (int j = 0; j < size; j++) {
+                if (m_pair.search(attval.attribute)->at(j) == attval) {
+                    m_num--;
+                    return;
+                }
+            }
             m_pair.search(attval.attribute)->push_back(attval);
         }
     }
