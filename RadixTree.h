@@ -13,8 +13,7 @@ class RadixTree {
         void insert(std::string key, const ValueType& value);
         ValueType* search(std::string key) const;
        
-        
-    //private:
+    private:
         struct Node {
             Node(std::string key)
             : m_key(key), m_end(false)
@@ -22,7 +21,6 @@ class RadixTree {
                 for (int i = 0; i < 128; i++) {
                     m_child[i] = nullptr;
                 }
-                m_end = false;
             }
             std::string m_key;
             Node* m_child[128];
@@ -31,18 +29,18 @@ class RadixTree {
         };
         int getMaxSub(std::string subKey, std::string key) const;
         Node* m_root;
-        void dump(Node* p, int depth);
         void cleanUp(Node* p);
 };
 
 template<typename ValueType>
 RadixTree<ValueType>::RadixTree() {
+    // root is empty string
     m_root = new Node("");
-    m_root->m_end = false;
 }
 
 template<typename ValueType>
 RadixTree<ValueType>::~RadixTree() {
+    // recursive 
     cleanUp(m_root);
 }
 
@@ -70,6 +68,7 @@ void RadixTree<ValueType>::insert(std::string key, const ValueType& value) {
     while (key.size() > 0) {
         int c = key[0];
         if (ptr->m_child[c] == nullptr) {
+            // if this child does not exist
             ptr->m_child[c] = new Node(key);
             ptr->m_child[c]->m_end = true;
             ptr->m_child[c]->m_value = value;
@@ -77,27 +76,32 @@ void RadixTree<ValueType>::insert(std::string key, const ValueType& value) {
         }
         else {
             if (key == ptr->m_child[c]->m_key) {
+                // if key is the same, then replace
                 ptr->m_child[c]->m_value = value;
                 return;
             }
             int pos = getMaxSub(ptr->m_child[c]->m_key, key);
-            // has common substr, inserted length is larger than existing length
+            
             if (pos == ptr->m_child[c]->m_key.size()) {
+                // go to child node
                 key = key.substr(pos);
                 ptr = ptr->m_child[c];
                 continue;
             }
             else {
+                // rebase
                 Node* oldNode = ptr->m_child[c];
                 Node* newNode = new Node(oldNode->m_key.substr(0,pos));
                 ptr->m_child[c] = newNode;
                 oldNode->m_key = oldNode->m_key.substr(pos);
                 newNode->m_child[oldNode->m_key[0]] = oldNode;
                 if (pos == key.size()) {
+                    // has common substr, and is exactly the substr
                     newNode->m_end = true;
                     newNode->m_value = value;
                 }
                 else{
+                    // not a exact substr
                     Node* secOldNode = new Node(key.substr(pos));
                     newNode->m_child[key[pos]] = secOldNode;
                     newNode->m_child[key[pos]]->m_end = true;
@@ -119,15 +123,18 @@ ValueType* RadixTree<ValueType>::search(std::string key) const {
         while (key.size() > 0) {
             int  c = key[0];
             if (ptr->m_child[c] == nullptr) {
+                // not exist at all
                 return nullptr;
             }
             else {
                 int pos = getMaxSub(ptr->m_child[c]->m_key, key);
                 if (key.substr(0, pos) == ptr->m_child[c]->m_key.substr(0, pos)) {
                     if (key == ptr->m_child[c]->m_key && ptr->m_child[c]->m_end) {
+                        
                         return &(ptr->m_child[c]->m_value);
                     }
                     else {
+                        // go to next child node
                         key = key.substr(pos);
                         ptr = ptr->m_child[c];
                     }
@@ -143,6 +150,7 @@ ValueType* RadixTree<ValueType>::search(std::string key) const {
 
 template<typename ValueType>
 void RadixTree<ValueType>::cleanUp(Node* p) {
+    // clean up danamically allocated memory
     if (p != nullptr) {
         for (int i = 0; i < 128; i++) {
             if (p->m_child[i] != nullptr) {
@@ -152,20 +160,5 @@ void RadixTree<ValueType>::cleanUp(Node* p) {
         delete p;
         return;
     }
-}
-
-template<typename ValueType>
-void RadixTree<ValueType>::dump(Node* p, int depth) {
-        std::string space(4*depth, ' ');
-        if (p->m_end) {
-            std::cout << space << p->m_key << "$" << p->m_value << std::endl;
-        }
-        else {
-            std::cout << space << p->m_key << std::endl;
-        }
-        for (int k = 0; k < 128; k++) {
-            if (p->m_child[k] != nullptr)
-                dump(p->m_child[k], depth+1);
-        }
 }
 #endif

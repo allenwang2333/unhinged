@@ -1099,7 +1099,3 @@ trait,vulnerable,trait,vulnerable
 trait,well-meaning,trait,well-meaning
 trait,wishabrasive,trait,wishabrasive
 trait,anal retentive,trait,anal retentive
-favorite_food,del taco,favorite_food,del taco
-favorite_food,del taco,favorite_food,mexican
-favorite_food,del taco,occupation,del taco employee
-favorite_food,taco bell,favorite_food,del taco

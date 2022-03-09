@@ -7,6 +7,7 @@
 using namespace std;
 
 MemberDatabase::MemberDatabase() {
+    
 
 }
 
@@ -17,60 +18,46 @@ MemberDatabase::~MemberDatabase() {
 }
 
 bool MemberDatabase::LoadDatabase(string filename) {
-    ifstream memberFile;
+    ifstream memberFile(filename);
     string line;
-    int count = 0;
-    string name = "";
-    string email = "";
-    vector<AttValPair> v;
-    
-    memberFile.open(filename);
-    if (memberFile.is_open()) {
+    vector<string> personInfo;
+    if (memberFile) {
         while (getline(memberFile, line)) {
-            if (count == 0) {
-                name = line;
-                count++;
-            }
-            else if (count == 1) {
-                email = line;
-                count++;
-            }
-            else if (count == 2) {
-                count++;
-                continue;
+            if (line.size() != 0) {
+                personInfo.push_back(line);
             }
             else {
-                if (line.size()!= 0) {
-                    v.push_back(parser(line));
-                    count++;
+                PersonProfile* p = new PersonProfile(personInfo[0], personInfo[1]);
+                int size = personInfo.size();
+                for (int i = 3; i < size; i++) {
+                    int pos = personInfo[i].find(',');
+                    string attr = personInfo[i].substr(0, pos); // attribute
+                    string value = personInfo[i].substr(pos+1); // value
+                    p->AddAttValPair(AttValPair(attr, value));  // add attribute value pair
                 }
-            }
-            
-            if (line.size() == 0) {
-                PersonProfile* p = new PersonProfile(name, email);
-                for (int i = 0; i < v.size(); i++) {
-                    p->AddAttValPair(v[i]);
-                    vector<string>* ptr = m_treeByPair.search(v[i].attribute + ',' + v[i].value);
+                
+                for (int j = 0; j < p->GetNumAttValPairs(); j++) {
+                    // person profile does not have repeated attval paris.
+                    // there fore I don't need to check for repetition in this case
+                    // saves time complexity!!
+                    AttValPair attval;
+                    p->GetAttVal(j, attval);
+                    string s = attval.attribute + ',' + attval.value;
+                    vector<string>* ptr = m_treeByPair.search(s);
                     if (ptr == nullptr) {
                         vector<string> emails;
-                        emails.push_back(email);
-                        m_treeByPair.insert(v[i].attribute + ',' + v[i].value, emails);
+                        emails.push_back(p->GetEmail());
+                        m_treeByPair.insert(s, emails);
                     }
                     else {
-                        ptr->push_back(email);
+                        ptr->push_back(p->GetEmail());
                     }
                 }
-                m_treeByEmail.insert(email, p);
+                m_treeByEmail.insert(personInfo[1], p); // inserting email tree
                 m_personPtr.push_back(p);
-                count = 0;
-                name = "";
-                email = "";
-                v.clear();
-                
-                continue;
+                personInfo.clear();
             }
         }
-        memberFile.close();
         return true;
     }
     else {
@@ -82,41 +69,22 @@ bool MemberDatabase::LoadDatabase(string filename) {
 vector<string> MemberDatabase::FindMatchingMembers(const AttValPair& input) const {
     vector<string> v;
     string s = input.attribute + ',' + input.value;
-    if (m_treeByPair.search(s) == nullptr) {
+    vector<string>* ptr = m_treeByPair.search(s);
+    if (ptr == nullptr) {
         return v;
     }
     else {
-        return *(m_treeByPair.search(s));
+        return *ptr; // the vector of emails
     }
 }
 
 const PersonProfile* MemberDatabase::GetMemberByEmail(std::string email) const {
-    if (m_treeByEmail.search(email) != nullptr) {
-        return *m_treeByEmail.search(email);
+    PersonProfile** ptr = m_treeByEmail.search(email);
+    if (ptr != nullptr) {
+        return *ptr;
     }
     else {
         return nullptr;
     }
-}
-
-AttValPair MemberDatabase::parser(string line) {
-    int count = 0;
-    string attr = "";
-    string value = "";
-    for (int i = 0; i < line.size(); i++) {
-        if (line[i] == ',') {
-            count++;
-            continue;
-        }
-        else {
-            if (count == 0) {
-                attr += line[i];
-            }
-            else {
-                value += line[i];
-            }
-        }
-    }
-    return AttValPair(attr, value);
 }
 

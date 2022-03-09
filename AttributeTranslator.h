@@ -14,8 +14,6 @@ class AttributeTranslator {
         std::vector<AttValPair> FindCompatibleAttValPairs(const AttValPair& source) const;
     private:
         RadixTree<std::vector<std::string>> m_pair;
-        std::string findCompatible(std::string line);
-        std::string findSource(std::string line);
 };
 
 #endif

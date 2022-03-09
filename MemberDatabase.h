@@ -18,7 +18,6 @@ class MemberDatabase {
         RadixTree<PersonProfile*> m_treeByEmail; // email -----> PersonProfile
         std::vector<PersonProfile*> m_personPtr; // stores pointers of dynamically allocated memory
         RadixTree<std::vector<std::string>> m_treeByPair; // attribute ------> email
-        AttValPair parser(std::string line);
 };
 
 #endif

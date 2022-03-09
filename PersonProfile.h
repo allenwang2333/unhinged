@@ -19,13 +19,8 @@ class PersonProfile {
         std::string m_name;
         std::string m_email;
         int m_num;
-        struct Counter {
-            Counter(std::string attr) :m_attr(attr), m_number (0){}
-            std::string m_attr;
-            int m_number;
-        };
-        std::vector<Counter> m_cntVec;
-        RadixTree<std::vector<AttValPair>> m_pair;
+        RadixTree<std::vector<std::string>> m_tree; // a tree indicating whether exists
+        std::vector<AttValPair> m_pair;  // a vector of attrval pari for retireval
 };
 
 #endif

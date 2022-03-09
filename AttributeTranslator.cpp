@@ -15,105 +15,63 @@ AttributeTranslator::~AttributeTranslator() {
 }
 
 bool AttributeTranslator::Load(string filename) {
-    ifstream attributeFile;
+    ifstream attributeFile(filename);
     string line;
-    attributeFile.open(filename);
-    if (attributeFile.is_open()) {
+    if (attributeFile) {
         while (getline(attributeFile, line)) {
-            string source = findSource(line);
-            string compatible = findCompatible(line);
-            vector<string> attVal;
-            if (m_pair.search(source) == nullptr) {
+            if (line.size() == 0) {
+                continue;
+            }
+            int pos = line.find(',');
+            string sourceaAttr = line.substr(0, pos); // source attribute
+            line = line.substr(pos+1);
+            
+            pos = line.find(',');
+            string sourceValue = line.substr(0, pos); //source value;
+            string compatible = line.substr(pos+1); // compatible attribute + ',' + compatible value
+            string source = sourceaAttr + ',' + sourceValue;
+            vector<string>* ptr = m_pair.search(source); // search whether exist
+            if (ptr == nullptr) {
+                // if not exist create a new vector and insert
+                vector<string> attVal;
                 attVal.push_back(compatible);
                 m_pair.insert(source, attVal);
             }
             else {
-                // TODO:: do i need to deal with the repeated case?
-                vector<string> existedPairs = *m_pair.search(source);
-                existedPairs.push_back(compatible);
-                m_pair.insert(source, existedPairs);
+                // compatible attributes for a given attribute is less than 10, so O(10) = O(1)
+                bool flag = false; // repeated case
+                for (int i = 0; i < ptr->size(); i++) {
+                    if ((*ptr)[i] == compatible) {
+                        flag = true; // has repeat
+                        break;
+                    }
+                }
+                if (!flag) {
+                    ptr->push_back(compatible); // no repeat push back
+                }
             }
         }
-        attributeFile.close();
         return true;
     }
     else {
-        cerr << "The file cannot be opened. There must be some error!" << endl;
         return false;
     }
 }
 
 vector<AttValPair> AttributeTranslator::FindCompatibleAttValPairs(const AttValPair& source) const {
-    vector<string> result;
-    vector<AttValPair> empty;
-    vector<AttValPair> returnVec;
+    vector<AttValPair> result;
     string s = source.attribute + ',' + source.value;
-    if (m_pair.search(s) == nullptr) {
-        return empty;
+    
+    vector<string>* ptr = m_pair.search(s);
+    if (ptr == nullptr) {
+        return result;
     }
     else {
-        result = *(m_pair.search(s));
-    }
-    for (int i = 0; i < result.size(); i++) {
-        string attr = result[i].substr(0, result[i].find(','));
-        string value = result[i].substr(result[i].find(',') + 1);
-        returnVec.push_back(AttValPair(attr, value));
-    }
-    return returnVec;
-}
-
-string AttributeTranslator::findCompatible(string line) {
-    int counter = 0;
-    string s;
-    string sourceAttr = "";
-    string sourceValue = "";
-    string compatibleAttr = "";
-    string compatibleValue = "";
-    for (int i = 0; i < line.size(); i++) {
-        if (line[i] == ',') {
-            counter += 1;
-            continue;
-        }
-        if (counter == 0) {
-            sourceAttr += line[i];
-        }
-        else if (counter == 1) {
-            sourceValue += line[i];
-        }
-        else if (counter == 2) {
-            compatibleAttr += line[i];
-        }
-        else {
-            compatibleValue += line[i];
+        for (int i = 0; i < ptr->size(); i++) {
+            int pos = (*ptr)[i].find(',');
+            // push back to the vector
+            result.push_back(AttValPair((*ptr)[i].substr(0, pos), (*ptr)[i].substr(pos + 1)));
         }
     }
-    return compatibleAttr + ',' + compatibleValue;
-}
-
-string AttributeTranslator::findSource(string line) {
-    int counter = 0;
-    string s;
-    string sourceAttr = "";
-    string sourceValue = "";
-    string compatibleAttr = "";
-    string compatibleValue = "";
-    for (int i = 0; i < line.size(); i++) {
-        if (line[i] == ',') {
-            counter += 1;
-            continue;
-        }
-        if (counter == 0) {
-            sourceAttr += line[i];
-        }
-        else if (counter == 1) {
-            sourceValue += line[i];
-        }
-        else if (counter == 2) {
-            compatibleAttr += line[i];
-        }
-        else {
-            compatibleValue += line[i];
-        }
-    }
-    return sourceAttr + ',' + sourceValue;
+    return result;
 }
