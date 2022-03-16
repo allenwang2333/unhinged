@@ -3,8 +3,8 @@
 
 #include <string>
 #include <vector>
-#include "provided.h"
 #include "RadixTree.h"
+#include "provided.h"
 
 class AttributeTranslator {
     public:

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "MemberDatabase.h"
 #include "RadixTree.h"
 #include "PersonProfile.h"
@@ -7,7 +8,6 @@
 using namespace std;
 
 MemberDatabase::MemberDatabase() {
-    
 
 }
 
@@ -22,11 +22,15 @@ bool MemberDatabase::LoadDatabase(string filename) {
     string line;
     vector<string> personInfo;
     if (memberFile) {
-        while (getline(memberFile, line)) {
+        while (!memberFile.eof()) {
+            getline(memberFile, line);
             if (line.size() != 0) {
                 personInfo.push_back(line);
             }
             else {
+                if (personInfo.size() < 3) return false; //  if size is smaller than 3, must return false;
+                int check = stoi(personInfo[2]); // get the number
+                if (check < 0 || personInfo.size() != check + 3) return false; // if check is a negative number or the length of personprofile does not match
                 PersonProfile* p = new PersonProfile(personInfo[0], personInfo[1]);
                 int size = personInfo.size();
                 for (int i = 3; i < size; i++) {
@@ -35,7 +39,6 @@ bool MemberDatabase::LoadDatabase(string filename) {
                     string value = personInfo[i].substr(pos+1); // value
                     p->AddAttValPair(AttValPair(attr, value));  // add attribute value pair
                 }
-                
                 for (int j = 0; j < p->GetNumAttValPairs(); j++) {
                     // person profile does not have repeated attval paris.
                     // there fore I don't need to check for repetition in this case
@@ -53,6 +56,7 @@ bool MemberDatabase::LoadDatabase(string filename) {
                         ptr->push_back(p->GetEmail());
                     }
                 }
+                
                 m_treeByEmail.insert(personInfo[1], p); // inserting email tree
                 m_personPtr.push_back(p);
                 personInfo.clear();
@@ -61,7 +65,6 @@ bool MemberDatabase::LoadDatabase(string filename) {
         return true;
     }
     else {
-        cerr << "The file cannot be opened. There must be some error!" << endl;
         return false;
     }
 }

@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 #include "PersonProfile.h"
 #include "provided.h"
 using namespace std;

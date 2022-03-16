@@ -18,7 +18,8 @@ bool AttributeTranslator::Load(string filename) {
     ifstream attributeFile(filename);
     string line;
     if (attributeFile) {
-        while (getline(attributeFile, line)) {
+        while (!attributeFile.eof()) {
+            getline(attributeFile, line);
             if (line.size() == 0) {
                 continue;
             }

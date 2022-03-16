@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 #include "RadixTree.h"
-#include "PersonProfile.h"
 #include "provided.h"
+
+class PersonProfile;
 
 class MemberDatabase {
     public:

@@ -2,8 +2,6 @@
 #define RADIX_TREE_H
 
 #include <string>
-#include <map>
-#include <iostream>
 
 template <typename ValueType>
 class RadixTree {

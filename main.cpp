@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-const std::string MEMBERS_FILE    = "members.txt";
-const std::string TRANSLATOR_FILE = "translator.txt";
+const std::string MEMBERS_FILE    = "/Users/allenwang/Desktop/CS 32/cs_32_project_4/project4/members.txt";
+const std::string TRANSLATOR_FILE = "/Users/allenwang/Desktop/CS 32/cs_32_project_4/project4/translator.txt";
 
 bool findMatches(const MemberDatabase& mdb, const AttributeTranslator& at);
 

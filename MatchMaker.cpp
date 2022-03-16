@@ -6,7 +6,9 @@
 #include "MatchMaker.h"
 #include "MemberDatabase.h"
 #include "AttributeTranslator.h"
+#include "PersonProfile.h"
 #include "RadixTree.h"
+#include "provided.h"
 
 using namespace std;
 
@@ -58,9 +60,16 @@ vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int thre
     for (int a = 0; a < size; a++) {
         AttValPair attval;
         compatiblePerson.GetAttVal(a, attval); // this is O(1)
+        cerr << attval.attribute << "," << attval.value << endl;
         vm = m_db->FindMatchingMembers(attval); // find all members of give attval
         for (int c = 0; c < vm.size(); c++) {
-            m_map[vm[c]]++; // put them in a map
+            if (vm[c] == email) {
+                continue;
+            }
+            else {
+                m_map[vm[c]]++; // put them in a map
+            }
+            
         }
     }
     
