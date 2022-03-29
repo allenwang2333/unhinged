@@ -60,7 +60,6 @@ vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int thre
     for (int a = 0; a < size; a++) {
         AttValPair attval;
         compatiblePerson.GetAttVal(a, attval); // this is O(1)
-        cerr << attval.attribute << "," << attval.value << endl;
         vm = m_db->FindMatchingMembers(attval); // find all members of give attval
         for (int c = 0; c < vm.size(); c++) {
             if (vm[c] == email) {
